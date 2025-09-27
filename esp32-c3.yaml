@@ -1,0 +1,143 @@
+esphome:
+  name: esp32-c3
+  friendly_name: esp32-c3
+
+esp32:
+  board: esp32-c3-devkitm-1
+  framework:
+    type: esp-idf
+
+# Enable logging
+logger:
+
+# 状态LED - 显示设备状态
+status_led:
+  pin: GPIO2
+
+# Enable Home Assistant API
+api:
+  encryption:
+    key: "buzPhV2opSEjsFY59itSFSz8AchrpGevV5BQ3GzqiTQ="
+
+ota:
+  - platform: esphome
+    password: "865212cfc23014a2bf61a02764583f24"
+  - platform: web_server
+
+# Web服务器 - 提供Web控制界面
+web_server:
+  port: 80
+
+wifi:
+  ssid: "1802"
+  password: "13866799994"
+  fast_connect: true
+
+  # Enable fallback hotspot (captive portal) in case wifi connection fails
+  ap:
+    ssid: "ESP32-C3-Fallback"
+    password: "12345678"
+
+captive_portal:
+
+# 设备信息传感器
+text_sensor:
+  - platform: version
+    name: "Version"
+  - platform: wifi_info
+    ip_address:
+      name: "IP Address"
+    ssid:
+      name: "Connected SSID"
+    mac_address:
+      name: "MAC Address"
+
+# 基本传感器 - 设备状态监控
+sensor:
+  - platform: wifi_signal
+    name: "WiFi Signal"
+    update_interval: 60s
+  - platform: uptime
+    name: "Uptime"
+  - platform: template
+    name: "Free Heap"
+    unit_of_measurement: "bytes"
+    update_interval: 60s
+    lambda: |-
+      return esp_get_free_heap_size();
+  
+  # 耗电量监控传感器（简化版本）
+  - platform: template
+    name: "Power Consumption"
+    unit_of_measurement: "mA"
+    device_class: current
+    update_interval: 30s
+    lambda: |-
+      // 估算功耗：基础功耗 + WiFi功耗
+      float base_power = 50.0;  // 基础功耗约50mA
+      float wifi_power = 80.0;  // WiFi功耗约80mA
+      return base_power + wifi_power;
+    accuracy_decimals: 1
+    
+  - platform: template
+    name: "Estimated Daily Consumption"
+    unit_of_measurement: "mAh"
+    device_class: energy
+    update_interval: 300s  # 5分钟更新一次
+    lambda: |-
+      // 基于当前功耗估算日耗电量
+      float current_power = 130.0;  // 当前功耗估算
+      float daily_hours = 24.0;
+      return (current_power * daily_hours) / 1000.0;  // 转换为mAh
+    accuracy_decimals: 2
+    
+  # 功耗统计传感器
+  - platform: template
+    name: "Total Energy Consumption"
+    unit_of_measurement: "Wh"
+    device_class: energy
+    state_class: total_increasing
+    update_interval: 60s
+    lambda: |-
+      // 累计功耗计算（基于运行时间）
+      static float total_energy = 0.0;
+      static uint32_t last_update = 0;
+      uint32_t now = millis();
+      
+      if (last_update > 0) {
+        float time_diff = (now - last_update) / 3600000.0;  // 转换为小时
+        float avg_power = 130.0;  // 平均功耗130mA
+        float voltage = 3.3;  // 工作电压3.3V
+        total_energy += (avg_power * voltage * time_diff) / 1000.0;  // 转换为Wh
+      }
+      last_update = now;
+      return total_energy;
+    accuracy_decimals: 3
+    
+
+# LED控制 - 支持RGB颜色
+light:
+  - platform: rgb
+    red: red_output
+    green: green_output
+    blue: blue_output
+    name: "ESP32 LED"
+    id: esp32_led
+    restore_mode: ALWAYS_OFF
+
+output:
+  - platform: ledc
+    pin: GPIO8
+    id: red_output
+    channel: 0
+    inverted: true  # 反转逻辑，高电平灭灯
+  - platform: ledc
+    pin: GPIO9
+    id: green_output
+    channel: 1
+    inverted: true
+  - platform: ledc
+    pin: GPIO10
+    id: blue_output
+    channel: 2
+    inverted: true

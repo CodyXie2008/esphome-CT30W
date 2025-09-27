@@ -1,0 +1,83 @@
+substitutions:
+  device_name: esprmt-orvibo
+
+esphome:
+  name: $device_name
+
+web_server:
+  port: 80
+  version: 3
+
+esp8266:
+  board: esp_wroom_02
+
+# Enable logging
+logger:
+  level: INFO
+
+# Enable Home Assistant API
+api:
+  encryption:
+    key: !secret api_encryption_key
+  services:
+    - service: send_raw_ir
+      variables:
+        raw_data: 'int[]'
+        freq: float
+      then:
+        - remote_transmitter.transmit_raw:
+              code: !lambda 'return raw_data;'
+              carrier_frequency: !lambda 'return freq;'
+    - service: send_nec_ir
+      variables:
+        addr: int
+        cmd: int
+        cmd_repeats: int
+      then:
+        - remote_transmitter.transmit_nec:
+            address: !lambda 'return addr;' #0x1234
+            command: !lambda 'return cmd;'  #0x78AB
+            command_repeats: !lambda 'return cmd_repeats;' # 1
+    - service: send_pronto_ir
+      variables:
+        pronto_data_string: string
+      then:
+        - remote_transmitter.transmit_pronto:
+              data: !lambda 'return pronto_data_string;'  #              
+ota:
+  - platform: esphome
+    password: !secret ota_password
+
+wifi:
+  ssid: !secret hz_iot_wifi_name
+  password: !secret hz_iot_wifi_password
+
+  # Enable fallback hotspot (captive portal) in case wifi connection fails
+  ap:
+    ssid: "${device_name} Fallback Hotspot"
+    password: !secret fallback_ap_password
+
+captive_portal:
+
+# Home Assistant实体定义
+button:
+  
+  # 发送开关灯按钮
+  - platform: template
+    name: "灯"
+    id: new_pronto_button
+    on_press:
+      - remote_transmitter.transmit_pronto:
+          data: "0000 006D 0022 0000 0160 00AE 0018 0014 0018 0014 0018 0014 0018 0014 0018 0014 0018 0014 0018 0015 0018 0014 0018 003F 0018 003F 0018 003F 0018 003F 0018 003F 0017 0041 0018 003F 0018 003F 0018 003F 0018 0014 0018 0014 0018 0014 0018 0014 0018 0014 0018 0014 0018 0014 0018 0014 0018 003F 0018 003F 0018 003F 0018 003F 0018 003F 0018 003F 0018 003F 0018 0180"
+
+status_led:
+  pin: 15
+
+remote_transmitter:
+  id: ir_sender
+  pin: GPIO14
+  carrier_duty_percent: 50%
+
+remote_receiver:
+  pin: GPIO5
+  dump: all
