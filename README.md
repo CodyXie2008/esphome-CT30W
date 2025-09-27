@@ -16,7 +16,7 @@
 
 对于CT30W红外遥控器的硬件操作，包括拆机、接线和烧录步骤，请参考详细的硬件操作指南：
 
-- **[红外遥控器 (CT30W) 刷esphome.md](红外遥控器 (CT30W) 刷esphome.md)**: 包含完整的CT30W红外遥控器硬件操作流程，详细介绍了：
+- **[红外遥控器 (CT30W) 刷esphome.md](红外遥控器%20(CT30W)%20刷esphome.md)**: 包含完整的CT30W红外遥控器硬件操作流程，详细介绍了：
   - 硬件准备清单
   - 设备拆解方法（多种方案对比）
   - 主板和电路板介绍
@@ -178,7 +178,7 @@ esphome dashboard .
 
 - **[ESP32-C3-Super-Mini-ESPHome-完整指南.md](ESP32-C3-Super-Mini-ESPHome-完整指南.md)**: ESP32-C3 Super Mini开发板的详细配置指南
 - **[ESPHome常用命令指南.md](ESPHome常用命令指南.md)**: ESPHome命令的参考手册
-- **[红外遥控器 (CT30W) 刷esphome.md](红外遥控器 (CT30W) 刷esphome.md)**: 提供CT30W红外遥控器硬件操作的完整指南，包括设备拆解、接线方法、GPIO0短接进入刷机模式的详细步骤，是硬件操作的必备参考
+- **[红外遥控器 (CT30W) 刷esphome.md](红外遥控器%20(CT30W)%20刷esphome.md)**: 提供CT30W红外遥控器硬件操作的完整指南，包括设备拆解、接线方法、GPIO0短接进入刷机模式的详细步骤，是硬件操作的必备参考
 
 ## 故障排除
 
